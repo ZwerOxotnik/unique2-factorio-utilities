@@ -31,10 +31,10 @@ local function hide_button_handler(event)
 	if not button_data then return end
 	local target_element = button_data.element
 
-	if target_element.style.visible == nil then 
-		target_element.style.visible = false
+	if target_element.visible == nil then 
+		target_element.visible = false
 	else
-		target_element.style.visible = not target_element.style.visible
+		target_element.visible = not target_element.visible
 	end
 end
 
@@ -53,7 +53,7 @@ function GuiUtils.make_hide_button(player, gui_element, is_sprite, text, parent,
 		button = parent.add{name=name, type="button", style=style, caption=text}
 		if not style then button.style.font = "default-bold" end
 	end
-	button.style.visible = true
+	button.visible = true
 	global.GuiUtils.hide_buttons[player.index][name] = {
 		element = gui_element,
 		button = button,

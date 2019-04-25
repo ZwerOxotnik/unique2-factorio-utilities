@@ -56,7 +56,7 @@ function TableUI.create_ui(table_ui, player)
     scroll_pane.style.minimal_width = 800
 
     GuiUtils.make_hide_button(player, frame, true, "virtual-signal/signal-T", nil, nil, true)
-    frame.style.visible = false
+    frame.visible = false
 end
 
 function TableUI.get_line(table_ui, player, line_index)
@@ -102,8 +102,8 @@ function TableUI.update(table_ui, player)
 
     local ui_frame = flow["tableui_frame_" .. table_ui.name]
 
-    if player_ui_data.show_ui == ui_frame.style.visible then
-        ui_frame.style.visible = player_ui_data.show_ui
+    if player_ui_data.show_ui == ui_frame.visible then
+        ui_frame.visible = player_ui_data.show_ui
     end
 
 

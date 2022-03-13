@@ -41,7 +41,7 @@ function ScenarioUtils.spawn_player(player, surface, position, items)
         else
             -- Armor
             if type(item_param) == "table" and item_param.type == "armor" then
-                local inv = player.get_inventory(defines.inventory.player_armor)
+                local inv = player.get_inventory(defines.inventory.character_armor)
                 inv.insert{name=item_type}
                 local grid = inv[1].grid
                 for _, item in pairs(item_param.equipment) do

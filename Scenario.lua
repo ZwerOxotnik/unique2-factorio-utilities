@@ -31,7 +31,8 @@ end
 
 function ScenarioUtils.spawn_player(player, surface, position, items)
     if player.character then player.character.destroy() end
-    local pos = surface.find_non_colliding_position("player", position, 30, 1.3)
+    --TODO: improve. There are cases, when "character" doesn't exist
+    local pos = surface.find_non_colliding_position("character", position, 30, 1.3)
     player.teleport(pos, surface)
     player.create_character()
     for item_type, item_param in pairs(items or {}) do

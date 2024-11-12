@@ -18,8 +18,8 @@ local GuiUtils = require("Utils/Gui")
 
 local VoteUI = {}
 
-if not global.VoteUI then global.VoteUI = { } end
-global.VoteUI.votes = global.VoteUI.votes or {}
+if not storage.VoteUI then storage.VoteUI = { } end
+storage.VoteUI.votes = storage.VoteUI.votes or {}
 
 
 VoteUI.on_vote_finished = script.generate_event_name()
@@ -43,11 +43,11 @@ VoteUI.on_vote_finished = script.generate_event_name()
 -- }
 
 function VoteUI.get_vote(name)
-	return global.VoteUI.votes[name]
+	return storage.VoteUI.votes[name]
 end
 
 function VoteUI.init_vote(name, cfg, options)
-	local vote_data = global.VoteUI.votes[name]
+	local vote_data = storage.VoteUI.votes[name]
 	if vote_data then 
 		error("Duplicate Vote.")
 	end
@@ -76,7 +76,7 @@ function VoteUI.init_vote(name, cfg, options)
 	end
 
 	
-	global.VoteUI.votes[vote_data.name] = vote_data
+	storage.VoteUI.votes[vote_data.name] = vote_data
 
 	if vote_data.cfg.force then
 		for _, player in pairs(vote_data.cfg.force.players) do
@@ -188,7 +188,7 @@ function VoteUI.destroy(vote)
 		VoteUI.remove_player(vote, player)
 	end
 
-    global.VoteUI.votes[vote.name] = nil
+    storage.VoteUI.votes[vote.name] = nil
 end
 
 function VoteUI.update_guis(vote)
@@ -253,7 +253,7 @@ end
 -- Handle Duration
 
 Event.register(-60, function(event)
-	for k, vote in pairs(global.VoteUI.votes) do
+	for k, vote in pairs(storage.VoteUI.votes) do
 		if vote.duration then
 			vote.duration = vote.duration - 1
 			if vote.duration < 0 then
@@ -273,7 +273,7 @@ end)
 
 Event.register(defines.events.on_player_joined_game, function(event) 
 	local player = game.players[event.player_index]
-	for _, vote in pairs(global.VoteUI.votes) do
+	for _, vote in pairs(storage.VoteUI.votes) do
 		if vote.cfg.force and player.force.name == vote.cfg.force.name then 
 			VoteUI.add_player(vote, player)
 		end
@@ -282,7 +282,7 @@ end)
 
 Event.register(defines.events.on_player_left_game, function(event)
 	local player = game.players[event.player_index]
-	for _, vote in pairs(global.VoteUI.votes) do
+	for _, vote in pairs(storage.VoteUI.votes) do
 		if vote.players[event.player_index] then 
             VoteUI.remove_player(vote, player)
 		end
@@ -293,7 +293,7 @@ Event.register(defines.events.on_forces_merging, function(event)
 	local source = event.source
 	local destination = event.destination
 
-	for _, vote in pairs(global.VoteUI.votes) do
+	for _, vote in pairs(storage.VoteUI.votes) do
 		if vote.cfg.force.name == destination.name then
 			for _, player in pairs(source.players) do
 				VoteUI.add_player(vote, player)
@@ -308,7 +308,7 @@ end)
 
 Event.register(defines.events.on_player_changed_force, function(event)
 	local player = game.players[event.player_index]
-	for _, vote in pairs(global.VoteUI.votes) do
+	for _, vote in pairs(storage.VoteUI.votes) do
 		if vote.cfg.force and player.force.name == vote.cfg.force.name then 
 			VoteUI.add_player(vote, player)
 		elseif vote.cfg.force and vote.cfg.force.name == event.force.name and vote.players[player.index] then
@@ -325,7 +325,7 @@ GuiEvent.on_click("vote_option_button_(.*)", function (event)
 
 	local vote_name = string.sub(element.parent.parent.name, #"vote_ui_" + 1)
 
-	local vote_data = global.VoteUI.votes[vote_name]
+	local vote_data = storage.VoteUI.votes[vote_name]
 	if not vote_data then return end
 	if not vote_data.players[player.index] then return end
 

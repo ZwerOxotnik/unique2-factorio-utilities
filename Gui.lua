@@ -10,8 +10,8 @@ local String = require("Utils/String")
 
 local GuiUtils = {}
 
-if not global.GuiUtils then global.GuiUtils = { hide_buttons = {} } end
-if not global.GuiUtils.hide_buttons then global.GuiUtils.hide_buttons = {} end
+if not storage.GuiUtils then storage.GuiUtils = { hide_buttons = {} } end
+if not storage.GuiUtils.hide_buttons then storage.GuiUtils.hide_buttons = {} end
 
 
 
@@ -21,7 +21,7 @@ if not global.GuiUtils.hide_buttons then global.GuiUtils.hide_buttons = {} end
 
 
 local function hide_button_handler(event)
-	local player_buttons = global.GuiUtils.hide_buttons[event.player_index]
+	local player_buttons = storage.GuiUtils.hide_buttons[event.player_index]
 	-- Check if this lua instance created any hide buttons
 	if not player_buttons then return end
 	local element = event.element
@@ -42,7 +42,7 @@ GuiEvent.on_click("hide_button_(.*)", hide_button_handler)
 
 -- set_as_opened doesnt seem to work.
 function GuiUtils.make_hide_button(player, gui_element, is_sprite, text, parent, style)
-	global.GuiUtils.hide_buttons[player.index] = global.GuiUtils.hide_buttons[player.index] or {}
+	storage.GuiUtils.hide_buttons[player.index] = storage.GuiUtils.hide_buttons[player.index] or {}
 
 	if not parent then parent = mod_gui.get_button_flow(player) end
 	local name = "hide_button_" .. gui_element.name
@@ -54,7 +54,7 @@ function GuiUtils.make_hide_button(player, gui_element, is_sprite, text, parent,
 		if not style then button.style.font = "default-bold" end
 	end
 	button.visible = true
-	global.GuiUtils.hide_buttons[player.index][name] = {
+	storage.GuiUtils.hide_buttons[player.index][name] = {
 		element = gui_element,
 		button = button,
 	}
@@ -63,17 +63,17 @@ end
 function GuiUtils.remove_hide_button(player, gui_element)
 	if not gui_element then game.print(debug.traceback()) end
 	local name = "hide_button_" .. gui_element.name
-	local button_data = global.GuiUtils.hide_buttons[player.index][name]
+	local button_data = storage.GuiUtils.hide_buttons[player.index][name]
 	button_data.button.destroy()
-	global.GuiUtils.hide_buttons[player.index][name] = nil
+	storage.GuiUtils.hide_buttons[player.index][name] = nil
 end
 
 function GuiUtils.hide_button_info(player, gui_element)
 	local name = "hide_button_" .. gui_element.name
-	if not global.GuiUtils.hide_buttons or not global.GuiUtils.hide_buttons[player.index] then
+	if not storage.GuiUtils.hide_buttons or not storage.GuiUtils.hide_buttons[player.index] then
 		return false
 	end
-	return global.GuiUtils.hide_buttons[player.index][name]	
+	return storage.GuiUtils.hide_buttons[player.index][name]	
 end
 
 

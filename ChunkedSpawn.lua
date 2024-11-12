@@ -15,7 +15,7 @@ Spawn.remove_types_natural = { "tree", "unit-spawner", "turret", "simple-entity"
 Spawn.remove_types_natural_no_res = { "tree", "unit-spawner", "turret", "simple-entity", "unit", "fish"}
 
 
-global.Spawn = global.Spawn or { 
+storage.Spawn = storage.Spawn or { 
     chunked_entities = {},
     chunked_tiles = {},
     enqueued_chunks = {},
@@ -23,7 +23,7 @@ global.Spawn = global.Spawn or {
 
 
 local function spawn_chunk_entities(surface, chunk_position)
-    local chunk_entity_data = global.Spawn.chunked_entities[surface.index]
+    local chunk_entity_data = storage.Spawn.chunked_entities[surface.index]
     local entities = Chunked.get_chunk_entries_at_chunk(chunk_entity_data, chunk_position)
 
     if not entities then 
@@ -76,7 +76,7 @@ local function spawn_chunk_entities(surface, chunk_position)
         elseif entity_task.spawn_chance then
             local corpse_name
             if corpse_cache[entity_task.entity.name] == nil then 
-                local corpses = game.entity_prototypes[entity_task.entity.name].corpses
+                local corpses = prototypes.entity[entity_task.entity.name].corpses
                 if corpses then 
                     corpse_name = (next(corpses))
                     corpse_cache[entity_task.entity.name] = corpse_name
@@ -99,7 +99,7 @@ local function spawn_chunk_entities(surface, chunk_position)
 end
 
 local function spawn_chunk_tiles(surface, chunk_position)
-    local chunk_tile_data = global.Spawn.chunked_tiles[surface.index]
+    local chunk_tile_data = storage.Spawn.chunked_tiles[surface.index]
     if not chunk_tile_data then return 0 end
     local tiles = chunk_tile_data[Chunked.key_from_chunk_position(chunk_position)]
     if not tiles then return 0 end
@@ -130,7 +130,7 @@ end
 
 
 local function enqueue_chunk_spawn(surface_id, chunk_position)
-    table.insert(global.Spawn.enqueued_chunks, {surface_id, Utils.copy(chunk_position)})
+    table.insert(storage.Spawn.enqueued_chunks, {surface_id, Utils.copy(chunk_position)})
 end
 
 
@@ -146,9 +146,9 @@ function Spawn.spawn_entities(surface, entities, offset, rotation, force, build_
 
     -- Prepare internal data
     local added_chunks = {}
-    if not global.Spawn.chunked_entities[surface.index] then 
-        global.Spawn.chunked_entities[surface.index] = Chunked.new(CHUNKSIZE) 
-        global.Spawn.chunked_tiles[surface.index] = {}
+    if not storage.Spawn.chunked_entities[surface.index] then 
+        storage.Spawn.chunked_entities[surface.index] = Chunked.new(CHUNKSIZE) 
+        storage.Spawn.chunked_tiles[surface.index] = {}
     end 
 
     -- Save all entity creation and tile creation tasks.
@@ -165,7 +165,7 @@ function Spawn.spawn_entities(surface, entities, offset, rotation, force, build_
         added_chunks[Chunked.key_from_position({chunk_size=CHUNKSIZE}, entity.position)] = true
 
         -- Save entity creation task
-        Chunked.create_entry(global.Spawn.chunked_entities[surface.index], entity.position, {
+        Chunked.create_entry(storage.Spawn.chunked_entities[surface.index], entity.position, {
             position = Utils.copy(entity.position),
             entity = entity, 
             as_ghost = as_ghost,
@@ -191,10 +191,10 @@ function Spawn.spawn_entities(surface, entities, offset, rotation, force, build_
             local xmax, ymax = Maths.get_coordinates(extended_collision_box[2] or extended_collision_box.right_bottom)
             local center = {(xmax + xmin) / 2, (ymax + ymin) / 2}
 
-            local chunk_data = global.Spawn.chunked_tiles[surface.index]
+            local chunk_data = storage.Spawn.chunked_tiles[surface.index]
             if not chunk_data then
-                global.Spawn.chunked_tiles[surface.index] = {}
-                chunk_data = global.Spawn.chunked_tiles[surface.index]
+                storage.Spawn.chunked_tiles[surface.index] = {}
+                chunk_data = storage.Spawn.chunked_tiles[surface.index]
             end
 
             local x, y = math.floor(xmin) + 1, math.floor(ymin) + 1
@@ -247,7 +247,7 @@ function Spawn.spawn_entities(surface, entities, offset, rotation, force, build_
 end
 
 function Spawn.set_entity_post_process(surface, position, postprocess_func, postprocess_data)
-    local chunk_entity_data = global.Spawn.chunked_entities[surface.index]
+    local chunk_entity_data = storage.Spawn.chunked_entities[surface.index]
     local entity_task = Chunked.get_entry_at(chunk_entity_data, position)
     entity_task.postprocess_func = postprocess_func
     entity_task.postprocess_data = postprocess_data
@@ -259,8 +259,8 @@ function Spawn.on_chunk_generated(event)
     local chunk_position
     
 
-    local chunked_entities = global.Spawn.chunked_entities[event.surface.index]
-    local chunked_tiles = global.Spawn.chunked_tiles[event.surface.index]
+    local chunked_entities = storage.Spawn.chunked_entities[event.surface.index]
+    local chunked_tiles = storage.Spawn.chunked_tiles[event.surface.index]
 
     local x, y = 0, 0
     while x < 32 / CHUNKSIZE do
@@ -279,7 +279,7 @@ function Spawn.on_chunk_generated(event)
 end
 
 function Spawn.controlled_spawn()
-    local enqueued_chunk = global.Spawn.enqueued_chunks[1]
+    local enqueued_chunk = storage.Spawn.enqueued_chunks[1]
     if not enqueued_chunk then return end
     local surface_id, chunk_position
     local other_id
@@ -296,8 +296,8 @@ function Spawn.controlled_spawn()
         time = time + spawn_chunk_entities(surface, chunk_position)
         time = time + spawn_chunk_tiles(surface, chunk_position)
 
-        table.remove(global.Spawn.enqueued_chunks, 1)
-        enqueued_chunk = global.Spawn.enqueued_chunks[1]
+        table.remove(storage.Spawn.enqueued_chunks, 1)
+        enqueued_chunk = storage.Spawn.enqueued_chunks[1]
         if not enqueued_chunk then break end
     end
 end

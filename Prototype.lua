@@ -27,7 +27,7 @@ function ProtUtils.correct_item(s)
 		["small-worm"] = "small-worm-turret",
 		["medium-worm"] = "medium-worm-turret",
 		["big-worm"] = "big-worm-turret",
-		["portable-fusion-reactor-equipment"] = "fusion-reactor-equipment",
+		["portable-fusion-reactor-equipment"] = "fission-reactor-equipment",
 		["worker-robot-speed"] = "worker-robots-speed"
 	}
 	return fix[s] or s
@@ -61,7 +61,7 @@ function ProtUtils.generic_recipe(name)
 		name = name,
 		enabled = true,
 		ingredients = {},
-		result = name,
+		results = {{type = "item", name = name, amount = 1}},
 	}
 end
 
@@ -110,7 +110,7 @@ function ProtUtils.new_entity(new_name, old_name, type)
 			recipe_prototype,
 			{
 				name = new_name,
-				result = new_name,
+				results = {{type = "item", name = new_name, amount = 1}},
 			}
 		}
 	else

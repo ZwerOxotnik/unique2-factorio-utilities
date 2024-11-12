@@ -9,12 +9,12 @@ local Event = require("stdlib/event/event")
 
 
 local TableUI = {}
-global.TableUI = global.TableUI or { uis = {} }
+storage.TableUI = storage.TableUI or { uis = {} }
 
 local NUM_LINES = 200
 
 Event.register(defines.events.on_tick, function()
-    for _, ui in pairs(global.TableUI.uis) do
+    for _, ui in pairs(storage.TableUI.uis) do
         for _, player in pairs(game.players) do
             TableUI.update(ui, player)
         end
@@ -31,14 +31,14 @@ function TableUI.remove_table(table_ui, name)
 end
 
 function TableUI.create(name)
-    if not name then name = #global.TableUI.uis + 1 end
+    if not name then name = #storage.TableUI.uis + 1 end
     local table_ui = {
         name = name,
         the_table = {},
         player_data = {},
     }
 
-    global.TableUI.uis[name] = table_ui
+    storage.TableUI.uis[name] = table_ui
 
     return table_ui
 end
@@ -201,7 +201,7 @@ end
 local function expandNode(event)
     -- So this is a bit dirty.
     local name = string.sub(event.element.parent.parent.parent.name, 15)
-    local table_ui = global.TableUI.uis[name]
+    local table_ui = storage.TableUI.uis[name]
     local player = game.players[event.player_index]
     local player_ui_data = table_ui.player_data[player.index]
     local line = event.element
@@ -244,7 +244,7 @@ GuiEvent.on_click("tableui_line_(.*)", expandNode)
 
 Event.register(defines.events.on_tick, function(event)
     if (event.tick % math.floor(game.speed * 20 + 1)) ~= 0 then return end
-    for _, ui in pairs(global.TableUI.uis) do
+    for _, ui in pairs(storage.TableUI.uis) do
         for i, player_ui_data in pairs(ui.player_data) do
             local player = game.players[i]
             TableUI.update(ui, player)

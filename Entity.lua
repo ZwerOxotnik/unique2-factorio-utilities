@@ -8,9 +8,9 @@ local Str = require("Utils.String")
 
 local EntityUtils = {}
 
-if global then
-    if not global.EntityUtils then global.EntityUtils = { entity_recipe = {} } end
-    global.EntityUtils.collision_box_cache = {}
+if storage then
+    if not storage.EntityUtils then storage.EntityUtils = { entity_recipe = {} } end
+    storage.EntityUtils.collision_box_cache = {}
 end
 
 
@@ -23,16 +23,16 @@ function EntityUtils.collision_box(entity)
 		local x, y = Maths.get_coordinates(entity.position)
 		cache_key = "_" .. entity.name .. "_" .. x .. "_" .. y .. "_" .. (entity.direction or "")
 	end
-	if global.EntityUtils.collision_box_cache[cache_key] then
-		return global.EntityUtils.collision_box_cache[cache_key]
+	if storage.EntityUtils.collision_box_cache[cache_key] then
+		return storage.EntityUtils.collision_box_cache[cache_key]
 	end
 
 	if not entity then game.print(debug.traceback()) error("Called collision_box with parameter nil!") end
 
 	local rect = nil
 	if type(entity) == "string" then
-		local ret_val = game.entity_prototypes[entity].collision_box
-		global.EntityUtils.collision_box_cache[cache_key] = ret_val
+		local ret_val = prototypes.entity[entity].collision_box
+		storage.EntityUtils.collision_box_cache[cache_key] = ret_val
 		return ret_val
 	end
 	pcall(function()
@@ -40,13 +40,13 @@ function EntityUtils.collision_box(entity)
 			rect = Table.deepcopy(entity.prototype.collision_box)
 		end
 	end)
-	if not rect then rect = Table.deepcopy(game.entity_prototypes[entity.name].collision_box) end
+	if not rect then rect = Table.deepcopy(prototypes.entity[entity.name].collision_box) end
 
 	-- Note: copy outputs a rect as {left_top=..., right_bottom=...}, rotate_rect handles this and returns {[1]=..., [2]=...}.
 	rect = Maths.rotate_rect(rect, Str.rotation_stringtoint(entity.direction))
 
 	local ret_val = {Maths.translate(rect[1], entity.position), Maths.translate(rect[2], entity.position)}
-	global.EntityUtils.collision_box_cache[cache_key] = ret_val	
+	storage.EntityUtils.collision_box_cache[cache_key] = ret_val	
 	return ret_val
 end
 
@@ -64,15 +64,15 @@ function EntityUtils.get_recipe_name(entity)
 	pcall(function() recipe = entity.recipe end)
 	if entity.type == "furnace" then
 		if recipe then
-			global.EntityUtils.entity_recipe[x .. "_" .. y] = recipe.name
+			storage.EntityUtils.entity_recipe[x .. "_" .. y] = recipe.name
 			return recipe.name
 		end
 		pcall(function() recipe = entity.previous_recipe end)
 		if recipe then
-			global.EntityUtils.entity_recipe[x .. "_" .. y] = recipe.name
+			storage.EntityUtils.entity_recipe[x .. "_" .. y] = recipe.name
 			return recipe.name
 		end
-		if global.EntityUtils.entity_recipe[x .. "_" .. y] then return global.EntityUtils.entity_recipe[x .. "_" .. y] end
+		if storage.EntityUtils.entity_recipe[x .. "_" .. y] then return storage.EntityUtils.entity_recipe[x .. "_" .. y] end
 
 		local stack = entity.get_output_inventory()[1]
 		if stack and stack.valid_for_read then
@@ -90,7 +90,7 @@ end
 function EntityUtils.craft_interpolate(entity, ticks)
 	local craft_speed = entity.prototype.crafting_speed
 	local recipe = EntityUtils.get_recipe_name(entity)
-	local energy = game.recipe_prototypes[recipe].energy
+	local energy = prototypes.recipe[recipe].energy
 	local progress = entity.crafting_progress
 
 	return math.floor((ticks / 60 * craft_speed) / energy + progress)
@@ -104,7 +104,7 @@ function EntityUtils.can_craft(craft, player, need_intermediates)
 		return false
 	end
 	if need_intermediates then
-		local recipe = game.recipe_prototypes[craft.name]
+		local recipe = prototypes.recipe[craft.name]
 
 		if need_intermediates then
 			for _, ingr in pairs(recipe.ingredients) do
@@ -126,7 +126,7 @@ function EntityUtils.can_fast_replace_entities(entity, other_entity)
 	-- 	return false
 	-- end
 
-	if game.entity_prototypes[other_entity.name].fast_replaceable_group == nil or game.entity_prototypes[other_entity.name].fast_replaceable_group ~= game.entity_prototypes[entity.name].fast_replaceable_group then 
+	if prototypes.entity[other_entity.name].fast_replaceable_group == nil or prototypes.entity[other_entity.name].fast_replaceable_group ~= prototypes.entity[entity.name].fast_replaceable_group then 
 		return false
 	end
 
@@ -144,7 +144,7 @@ function EntityUtils.can_fast_replace_entities(entity, other_entity)
 end
 
 function EntityUtils.can_fast_replace(entity)
-	local prototype = game.entity_prototypes[entity.name]
+	local prototype = prototypes.entity[entity.name]
 	local blocking_entity = EntityUtils.get_entity_from_pos(entity.position, entity, prototype.type)
 	if not blocking_entity then
 		return false

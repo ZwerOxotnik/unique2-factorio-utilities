@@ -4,7 +4,7 @@ local Event = require("stdlib/event/event")
 
 local Output = {}
 
-if not global.Output then global.Output = { floating_texts = {} } end
+if not storage.Output then storage.Output = { floating_texts = {} } end
 
 
 function Output.output(str)
@@ -33,37 +33,42 @@ end
 
 function Output.display_floating_text(position, text, stay, color)
 	local pos = position.position or position
-	local entity_info = {name="flying-text", position=pos, text=text, color=color}
+	local entity_info = {
+		surface = game.surfaces.nauvis,
+		target  = pos,
+		color   = color,
+		text    = text,
+	}
 
 	local entity = game.surfaces.nauvis.create_entity(entity_info)
 
-	global.Output.floating_texts[#global.Output.floating_texts + 1] = {entity, entity_info, stay}
+	storage.Output.floating_texts[#storage.Output.floating_texts + 1] = {entity, entity_info, stay}
 
-	return #global.Output.floating_texts
+	return #storage.Output.floating_texts
 end
 
 function Output.remove_floating_text(index)
-	global.Output.floating_texts[index][1].destroy()
-	global.Output.floating_texts[index] = nil
+	storage.Output.floating_texts[index][1].destroy()
+	storage.Output.floating_texts[index] = nil
 end
 
 function Output.update_floating_text(index, new_text)
-	local text_data = global.Output.floating_texts[index]
+	local text_data = storage.Output.floating_texts[index]
 	text_data[1].destroy()
 	text_data[2].text = new_text
-	text_data[1] = game.surfaces.nauvis.create_entity(text_data[2])
-	text_data[1].teleport(text_data[2].position)
+	text_data[1] = rendering.draw_text(text_data[2])
+	text_data[1].position = text_data[2].position -- TODO: recheck, it seems pointless
 end
 
 Event.register(defines.events.on_tick, function ()
-	for i,text_data in pairs(global.Output.floating_texts) do
+	for i,text_data in pairs(storage.Output.floating_texts) do
 		if text_data[1] and text_data[1].valid then
 			text_data[1].teleport(text_data[2].position)
 		else
 			if text_data[3] then
-				text_data[1] = game.surfaces.nauvis.create_entity(text_data[2])
+				text_data[1] = rendering.draw_text(text_data[2])
 			else
-				global.Output.floating_texts[i] = nil
+				storage.Output.floating_texts[i] = nil
 			end
 		end
 	end
